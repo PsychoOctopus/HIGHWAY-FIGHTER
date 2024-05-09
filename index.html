@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Highway Fighter</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    #container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    #battleLog {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+        height: 200px;
+        overflow-y: scroll;
+        background-color: #f9f9f9;
+    }
+    #inputArea {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    input[type="text"] {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        flex: 1;
+        margin-right: 10px;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .player1 {
+        color: #007bff;
+    }
+    .player2 {
+        color: #ff0000;
+    }
+    .player-image {
+        width: 100px;
+        height: auto;
+        transition: transform 0.5s ease;
+    }
+    @keyframes shootAnimation {
+        0% { transform: rotate(0deg); }
+        50% { transform: rotate(15deg); }
+        100% { transform: rotate(0deg); }
+    }
+    @keyframes kickAnimation {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0); }
+    }
+    @keyframes punchAnimation {
+        0% { transform: rotate(0deg); }
+        50% { transform: rotate(20deg); }
+        100% { transform: rotate(0deg); }
+    }
+    @keyframes grenadeAnimation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+</style>
+</head>
+<body>
+    <div id="container">
+        <h1>Highway Fighter</h1>
+        <div>
+            <p>Player 1 Health: <span id="player1Health">100</span></p>
+            <p>Player 2 Health: <span id="player2Health">100</span></p>
+        </div>
+        <div id="battleLog"></div>
+        <div id="inputArea">
+            <input type="text" id="playerInput" placeholder="Type your move...">
+            <button onclick="submitMove()">Submit</button>
+        </div>
+        <p id="turnInfo"></p>
+        <img id="player1Image" class="player-image" src="player.jpeg" alt="Player 1">
+        <img id="player2Image" class="player-image" src="player.jpeg" alt="Player 2">
+    </div>
+
+    <script>
+        let currentPlayer = 1;
+        let player1Health = 100;
+        let player2Health = 100;
+        let player1ShootsLeft = 3;
+        let player1KicksLeft = 4;
+        let player1PunchesLeft = 5;
+        let player1GrenadesLeft = 1;
+        let player2ShootsLeft = 3;
+        let player2KicksLeft = 4;
+        let player2PunchesLeft = 5;
+        let player2GrenadesLeft = 1;
+
+        let battleLog = document.getElementById("battleLog");
+        let turnInfo = document.getElementById("turnInfo");
+        let playerInput = document.getElementById("playerInput");
+        let player1HealthDisplay = document.getElementById("player1Health");
+        let player2HealthDisplay = document.getElementById("player2Health");
+        let player1Image = document.getElementById("player1Image");
+        let player2Image = document.getElementById("player2Image");
+
+        function submitMove() {
+            let move = playerInput.value.trim().toLowerCase();
+            playerInput.value = "";
+
+            if (currentPlayer === 1) {
+                handleMove(move, 1, 2);
+                currentPlayer = 2;
+            } else {
+                handleMove(move, 2, 1);
+                currentPlayer = 1;
+            }
+            turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
+            updateHealthDisplay();
+        }
+
+        function handleMove(move, player, opponent) {
+            let damage = 0;
+            let animationName = "";
+
+            if (player === 1) {
+                if (move === "shoot" && player1ShootsLeft > 0) {
+                    damage = 10;
+                    player1ShootsLeft--;
+                    animationName = "shootAnimation";
+                } else if (move === "kick" && player1KicksLeft > 0) {
+                    damage = 15;
+                    player1KicksLeft--;
+                    animationName = "kickAnimation";
+                } else if (move === "punch" && player1PunchesLeft > 0) {
+                    damage = 5;
+                    player1PunchesLeft--;
+                    animationName = "punchAnimation";
+                } else if (move === "grenade" && player1GrenadesLeft > 0) {
+                    damage = 60;
+                    player1GrenadesLeft--;
+                    animationName = "grenadeAnimation";
+                } else {
+                    battleLog.innerHTML += "<p class='player1'>Invalid move!</p>";
+                    return;
+                }
+            } else {
+                if (move === "shoot" && player2ShootsLeft > 0) {
+                    damage = 10;
+                    player2ShootsLeft--;
+                    animationName = "shootAnimation";
+                } else if (move === "kick" && player2KicksLeft > 0) {
+                    damage = 15;
+                    player2KicksLeft--;
+                    animationName = "kickAnimation";
+                } else if (move === "punch" && player2PunchesLeft > 0) {
+                    damage = 5;
+                    player2PunchesLeft--;
+                    animationName = "punchAnimation";
+                } else if (move === "grenade" && player2GrenadesLeft > 0) {
+                    damage = 60;
+                    player2GrenadesLeft--;
+                    animationName = "grenadeAnimation";
+                } else {
+                    battleLog.innerHTML += "<p class='player2'>Invalid move!</p>";
+                    return;
+                }
+            }
+
+            if (opponent === 1) {
+                player1Health -= damage;
+                battleLog.innerHTML += "<p class='player1'>Player 1 " + move + "s Player 2 for " + damage + " damage!</p>";
+                player2Image.style.animation = animationName + " 0.5s ease";
+                setTimeout(() => { player2Image.style.animation = ""; }, 500);
+            } else {
+                player2Health -= damage;
+                battleLog.innerHTML += "<p class='player2'>Player 2 " + move + "s Player 1 for " + damage + " damage!</p>";
+                player1Image.style.animation = animationName + " 0.5s ease";
+                setTimeout(() => { player1Image.style.animation = ""; }, 500);
+            }
+
+            if (player1Health <= 0) {
+                battleLog.innerHTML += "<p class='player1'>Player 1 is defeated!</p>";
+                playerInput.setAttribute("disabled", true);
+            } else if (player2Health <= 0) {
+                battleLog.innerHTML += "<p class='player2'>Player 2 is defeated!</p>";
+                playerInput.setAttribute("disabled", true);
+            }
+        }
+
+        function updateHealthDisplay() {
+            player1HealthDisplay.textContent = player1Health;
+            player2HealthDisplay.textContent = player2Health;
+        }
+
+        turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
+        updateHealthDisplay();
+    </script>
+</body>
+</html>
+
+
+<script src="filesystem:https://webmaker.app/temporary/script.js">
+</script>
+</body>
+</html>
