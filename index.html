@@ -1,14 +1,4 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-
-<style id="webmakerstyle">
-
-</style>
-</head>
-<body>
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -105,6 +95,8 @@
         <div>
             <p>Player 1 Health: <span id="player1Health">100</span></p>
             <p>Player 2 Health: <span id="player2Health">100</span></p>
+            <input type="file" id="player1File" accept="image/*">
+            <input type="file" id="player2File" accept="image/*">
         </div>
         <div id="battleLog"></div>
         <div id="inputArea">
@@ -112,8 +104,8 @@
             <button onclick="submitMove()">Submit</button>
         </div>
         <p id="turnInfo"></p>
-        <img id="player1Image" class="player-image" src="player.jpeg" alt="Player 1">
-        <img id="player2Image" class="player-image" src="player.jpeg" alt="Player 2">
+        <img id="player1Image" class="player-image" src="default_player.jpeg" alt="Player 1">
+        <img id="player2Image" class="player-image" src="default_player.jpeg" alt="Player 2">
     </div>
 
     <script>
@@ -136,6 +128,28 @@
         let player2HealthDisplay = document.getElementById("player2Health");
         let player1Image = document.getElementById("player1Image");
         let player2Image = document.getElementById("player2Image");
+        let player1File = document.getElementById("player1File");
+        let player2File = document.getElementById("player2File");
+
+        player1File.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    player1Image.src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        player2File.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    player2Image.src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
 
         function submitMove() {
             let move = playerInput.value.trim().toLowerCase();
@@ -229,11 +243,5 @@
         turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
         updateHealthDisplay();
     </script>
-</body>
-</html>
-
-
-<script src="filesystem:https://webmaker.app/temporary/script.js">
-</script>
 </body>
 </html>
