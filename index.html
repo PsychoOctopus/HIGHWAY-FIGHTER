@@ -30,6 +30,7 @@
         height: 200px;
         overflow-y: scroll;
         background-color: #f9f9f9;
+        aria-live: polite; /* For screen readers to announce updates */
     }
     #inputArea {
         display: flex;
@@ -67,6 +68,7 @@
         height: auto;
         transition: transform 0.5s ease;
     }
+    /* Define keyframes for animations */
     @keyframes shootAnimation {
         0% { transform: rotate(0deg); }
         50% { transform: rotate(15deg); }
@@ -93,23 +95,30 @@
     <div id="container">
         <h1>Highway Fighter</h1>
         <div>
+            <!-- Display health for both players -->
             <p>Player 1 Health: <span id="player1Health">100</span></p>
             <p>Player 2 Health: <span id="player2Health">100</span></p>
+            <!-- File upload inputs for player images -->
             <input type="file" id="player1File" accept="image/*">
             <input type="file" id="player2File" accept="image/*">
         </div>
+        <!-- Battle log to show game actions -->
         <div id="battleLog"></div>
         <div id="inputArea">
+            <!-- Input field for player moves and submit button -->
             <input type="text" id="playerInput" placeholder="Type your move...">
             <button onclick="submitMove()">Submit</button>
         </div>
+        <!-- Information about whose turn it is -->
         <p id="turnInfo"></p>
+        <!-- Placeholder images for players -->
         <img id="player1Image" class="player-image" src="default_player.jpeg" alt="Player 1">
         <img id="player2Image" class="player-image" src="default_player.jpeg" alt="Player 2">
     </div>
 
     <script>
-        let currentPlayer = 1;
+        // Initialize game variables
+        let currentPlayer = 1; // Player 1 starts
         let player1Health = 100;
         let player2Health = 100;
         let player1ShootsLeft = 3;
@@ -121,6 +130,7 @@
         let player2PunchesLeft = 5;
         let player2GrenadesLeft = 1;
 
+        // DOM elements
         let battleLog = document.getElementById("battleLog");
         let turnInfo = document.getElementById("turnInfo");
         let playerInput = document.getElementById("playerInput");
@@ -131,101 +141,67 @@
         let player1File = document.getElementById("player1File");
         let player2File = document.getElementById("player2File");
 
+        // Event listener for uploading Player 1's image
         player1File.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
+            if (this.files && this.files[0] && this.files[0].type.startsWith('image/')) {
                 let reader = new FileReader();
                 reader.onload = function (e) {
                     player1Image.src = e.target.result;
                 }
                 reader.readAsDataURL(this.files[0]);
+            } else {
+                alert('Please upload a valid image file.');
             }
         });
 
+        // Event listener for uploading Player 2's image
         player2File.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
+            if (this.files && this.files[0] && this.files[0].type.startsWith('image/')) {
                 let reader = new FileReader();
                 reader.onload = function (e) {
                     player2Image.src = e.target.result;
                 }
                 reader.readAsDataURL(this.files[0]);
+            } else {
+                alert('Please upload a valid image file.');
             }
         });
 
-        function submitMove() {
-            let move = playerInput.value.trim().toLowerCase();
-            playerInput.value = "";
+        // Handle player actions (shoot, kick, punch, grenade)
+        function performAction(action, player, opponent) {
+            // Action details including damage and animation class
+            const actionDetails = {
+                shoot: { damage: 10, animation: 'shootAnimation' },
+                kick: { damage: 15, animation: 'kickAnimation' },
+                punch: { damage: 5, animation: 'punchAnimation' },
+                grenade: { damage: 60, animation: 'grenadeAnimation' }
+            };
 
-            if (currentPlayer === 1) {
-                handleMove(move, 1, 2);
-                currentPlayer = 2;
-            } else {
-                handleMove(move, 2, 1);
-                currentPlayer = 1;
-            }
-            turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
-            updateHealthDisplay();
-        }
-
-        function handleMove(move, player, opponent) {
-            let damage = 0;
-            let animationName = "";
-
-            if (player === 1) {
-                if (move === "shoot" && player1ShootsLeft > 0) {
-                    damage = 10;
-                    player1ShootsLeft--;
-                    animationName = "shootAnimation";
-                } else if (move === "kick" && player1KicksLeft > 0) {
-                    damage = 15;
-                    player1KicksLeft--;
-                    animationName = "kickAnimation";
-                } else if (move === "punch" && player1PunchesLeft > 0) {
-                    damage = 5;
-                    player1PunchesLeft--;
-                    animationName = "punchAnimation";
-                } else if (move === "grenade" && player1GrenadesLeft > 0) {
-                    damage = 60;
-                    player1GrenadesLeft--;
-                    animationName = "grenadeAnimation";
+            // Check if action is valid
+            if (actionDetails[action]) {
+                let { damage, animation } = actionDetails[action];
+                let actionCount = player === 1 ? player1[action + 'sLeft'] : player2[action + 'sLeft'];
+                
+                if (actionCount > 0) {
+                    actionCount--; // Decrease the number of available actions
+                    
+                    if (player === 1) {
+                        player2Health -= damage; // Apply damage to Player 2
+                        applyAnimation(player2Image, animation);
+                    } else {
+                        player1Health -= damage; // Apply damage to Player 1
+                        applyAnimation(player1Image, animation);
+                    }
+                    // Log the action
+                    battleLog.innerHTML += `<p class='player${opponent}'>Player ${player} ${action}s Player ${opponent} for ${damage} damage!</p>`;
                 } else {
-                    battleLog.innerHTML += "<p class='player1'>Invalid move!</p>";
-                    return;
+                    battleLog.innerHTML += `<p class='player${player}'>No ${action} left!</p>`;
                 }
             } else {
-                if (move === "shoot" && player2ShootsLeft > 0) {
-                    damage = 10;
-                    player2ShootsLeft--;
-                    animationName = "shootAnimation";
-                } else if (move === "kick" && player2KicksLeft > 0) {
-                    damage = 15;
-                    player2KicksLeft--;
-                    animationName = "kickAnimation";
-                } else if (move === "punch" && player2PunchesLeft > 0) {
-                    damage = 5;
-                    player2PunchesLeft--;
-                    animationName = "punchAnimation";
-                } else if (move === "grenade" && player2GrenadesLeft > 0) {
-                    damage = 60;
-                    player2GrenadesLeft--;
-                    animationName = "grenadeAnimation";
-                } else {
-                    battleLog.innerHTML += "<p class='player2'>Invalid move!</p>";
-                    return;
-                }
+                battleLog.innerHTML += `<p class='player${player}'>Invalid move!</p>`;
             }
 
-            if (opponent === 1) {
-                player1Health -= damage;
-                battleLog.innerHTML += "<p class='player1'>Player 1 " + move + "s Player 2 for " + damage + " damage!</p>";
-                player2Image.style.animation = animationName + " 0.5s ease";
-                setTimeout(() => { player2Image.style.animation = ""; }, 500);
-            } else {
-                player2Health -= damage;
-                battleLog.innerHTML += "<p class='player2'>Player 2 " + move + "s Player 1 for " + damage + " damage!</p>";
-                player1Image.style.animation = animationName + " 0.5s ease";
-                setTimeout(() => { player1Image.style.animation = ""; }, 500);
-            }
-
+            // Check if any player is defeated
             if (player1Health <= 0) {
                 battleLog.innerHTML += "<p class='player1'>Player 1 is defeated!</p>";
                 playerInput.setAttribute("disabled", true);
@@ -235,11 +211,37 @@
             }
         }
 
+        // Apply animation to player image
+        function applyAnimation(playerImage, animationClass) {
+            playerImage.classList.add(animationClass);
+            setTimeout(() => playerImage.classList.remove(animationClass), 500);
+        }
+
+        // Handle move submission
+        function submitMove() {
+            let move = playerInput.value.trim().toLowerCase(); // Get move from input
+            playerInput.value = ""; // Clear the input
+
+            // Handle the move for the current player
+            if (currentPlayer === 1) {
+                performAction(move, 1, 2);
+                currentPlayer = 2;
+            } else {
+                performAction(move, 2, 1);
+                currentPlayer = 1;
+            }
+            // Update turn info and health display
+            turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
+            updateHealthDisplay();
+        }
+
+        // Update health display elements
         function updateHealthDisplay() {
             player1HealthDisplay.textContent = player1Health;
             player2HealthDisplay.textContent = player2Health;
         }
 
+        // Initialize the game display
         turnInfo.textContent = "It's Player " + currentPlayer + "'s turn";
         updateHealthDisplay();
     </script>
